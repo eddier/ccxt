@@ -24,7 +24,7 @@ module.exports = class gemini extends Exchange {
                 'fetchMyTrades': true,
                 'fetchOrder': false,
                 'fetchOrders': false,
-                'fetchOpenOrders': false,
+                'fetchOpenOrders': true,
                 'fetchClosedOrders': false,
                 'withdraw': true,
             },
@@ -309,4 +309,55 @@ module.exports = class gemini extends Exchange {
             'info': response,
         };
     }
+
+    async fetchOpenOrders (symbol = undefined, since = undefined, limit = undefined, params = {}) {
+        let response = await this.privatePostOrders(this.extend( params));
+        let market = undefined;
+        console.log(response);
+        return this.parseOrders (response, market, since, limit);
+    }
+
+    parseOrder (order, market = undefined) {
+        let status = "open";
+        let symbol = this.findSymbol (this.safeString (order, 'symbol'), market);
+        let timestamp = order.timestamp;
+        let iso8601 = undefined;
+
+        let price = this.safeFloat (order, 'price');
+        let amount = this.safeFloat (order, 'original_amount');
+        let filled = this.safeFloat (order, 'executed_amount', 0.0);
+        let remaining = this.safeFloat (order, 'remaining_amount', 0.0);
+        let cost = undefined;
+        if (typeof filled !== 'undefined') {
+            if (typeof amount !== 'undefined')
+                remaining = Math.max (amount - filled, 0.0);
+            if (typeof price !== 'undefined')
+                cost = price * filled;
+        }
+        let id = this.safeString (order, 'id');
+        let type = this.safeString (order, 'type');
+        if (typeof type !== 'undefined')
+            type = type.toLowerCase ();
+        let side = this.safeString (order, 'side');
+        if (typeof side !== 'undefined')
+            side = side.toLowerCase ();
+        let result = {
+            'info': order,
+            'id': id,
+            'timestamp': timestamp,
+            'datetime': iso8601,
+            'lastTradeTimestamp': undefined,
+            'symbol': symbol,
+            'type': type,
+            'side': side,
+            'price': price,
+            'amount': amount,
+            'cost': cost,
+            'filled': filled,
+            'remaining': remaining,
+            'status': status,
+            'fee': undefined,
+        };
+        return result;
+    }    
 };
