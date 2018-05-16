@@ -21,6 +21,7 @@ from ccxt.base.errors import InsufficientFunds
 from ccxt.base.errors import InvalidOrder
 from ccxt.base.errors import OrderNotFound
 from ccxt.base.errors import DDoSProtection
+from ccxt.base.errors import ExchangeNotAvailable
 
 
 class bittrex (Exchange):
@@ -32,7 +33,6 @@ class bittrex (Exchange):
             'countries': 'US',
             'version': 'v1.1',
             'rateLimit': 1500,
-            'hasAlreadyAuthenticatedSuccessfully': False,  # a workaround for APIKEY_INVALID
             # new metainfo interface
             'has': {
                 'CORS': True,
@@ -154,7 +154,8 @@ class bittrex (Exchange):
                 },
             },
             'exceptions': {
-                'Call to Cancel was throttled. Try again in 60 seconds.': DDoSProtection,
+                # 'Call to Cancel was throttled. Try again in 60 seconds.': DDoSProtection,
+                # 'Call to GetBalances was throttled. Try again in 60 seconds.': DDoSProtection,
                 'APISIGN_NOT_PROVIDED': AuthenticationError,
                 'INVALID_SIGNATURE': AuthenticationError,
                 'INVALID_CURRENCY': ExchangeError,
@@ -169,6 +170,7 @@ class bittrex (Exchange):
             },
             'options': {
                 'parseOrderStatus': False,
+                'hasAlreadyAuthenticatedSuccessfully': False,  # a workaround for APIKEY_INVALID
             },
         })
 
@@ -193,7 +195,7 @@ class bittrex (Exchange):
                 'amount': 8,
                 'price': 8,
             }
-            active = market['IsActive']
+            active = market['IsActive'] or market['IsActive'] == 'true'
             result.append({
                 'id': id,
                 'symbol': symbol,
@@ -390,8 +392,8 @@ class bittrex (Exchange):
             'symbol': market['symbol'],
             'type': 'limit',
             'side': side,
-            'price': float(trade['Price']),
-            'amount': float(trade['Quantity']),
+            'price': self.safe_float(trade, 'Price'),
+            'amount': self.safe_float(trade, 'Quantity'),
         }
 
     async def fetch_trades(self, symbol, since=None, limit=None, params={}):
@@ -510,7 +512,6 @@ class bittrex (Exchange):
             timestamp = self.parse8601(order['Opened'] + '+00:00')
         if 'Created' in order:
             timestamp = self.parse8601(order['Created'] + '+00:00')
-        iso8601 = self.iso8601(timestamp) if (timestamp is not None) else None
         lastTradeTimestamp = None
         if ('TimeStamp' in list(order.keys())) and(order['TimeStamp'] is not None):
             lastTradeTimestamp = self.parse8601(order['TimeStamp'] + '+00:00')
@@ -518,6 +519,7 @@ class bittrex (Exchange):
             lastTradeTimestamp = self.parse8601(order['Closed'] + '+00:00')
         if timestamp is None:
             timestamp = lastTradeTimestamp
+        iso8601 = self.iso8601(timestamp) if (timestamp is not None) else None
         fee = None
         commission = None
         if 'Commission' in order:
@@ -681,8 +683,13 @@ class bittrex (Exchange):
                 exceptions = self.exceptions
                 if message in exceptions:
                     raise exceptions[message](feedback)
+                if message is not None:
+                    if message.find('throttled. Try again') >= 0:
+                        raise DDoSProtection(feedback)
+                    if message.find('problem') >= 0:
+                        raise ExchangeNotAvailable(feedback)  # 'There was a problem processing your request.  If self problem persists, please contact...')
                 if message == 'APIKEY_INVALID':
-                    if self.hasAlreadyAuthenticatedSuccessfully:
+                    if self.options['hasAlreadyAuthenticatedSuccessfully']:
                         raise DDoSProtection(feedback)
                     else:
                         raise AuthenticationError(feedback)
@@ -694,5 +701,5 @@ class bittrex (Exchange):
         response = await self.fetch2(path, api, method, params, headers, body)
         # a workaround for APIKEY_INVALID
         if (api == 'account') or (api == 'market'):
-            self.hasAlreadyAuthenticatedSuccessfully = True
+            self.options['hasAlreadyAuthenticatedSuccessfully'] = True
         return response

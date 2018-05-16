@@ -132,6 +132,7 @@ class okcoinusd extends Exchange {
             'exceptions' => array (
                 '1009' => '\\ccxt\\OrderNotFound', // for spot markets, cancelling closed order
                 '1051' => '\\ccxt\\OrderNotFound', // for spot markets, cancelling "just closed" order
+                '1019' => '\\ccxt\\OrderNotFound', // order closed?
                 '20015' => '\\ccxt\\OrderNotFound', // for future markets
                 '1013' => '\\ccxt\\InvalidOrder', // no contract type (PR-1101)
                 '1027' => '\\ccxt\\InvalidOrder', // createLimitBuyOrder(symbol, 0, 0) => Incorrect parameter may exceeded limits
@@ -177,6 +178,8 @@ class okcoinusd extends Exchange {
             $minAmount = $markets[$i]['minTradeSize'];
             $minPrice = pow (10, -$precision['price']);
             $active = ($markets[$i]['online'] !== 0);
+            $baseNumericId = $markets[$i]['baseCurrency'];
+            $quoteNumericId = $markets[$i]['quoteCurrency'];
             $market = array_merge ($this->fees['trading'], array (
                 'id' => $id,
                 'symbol' => $symbol,
@@ -184,6 +187,8 @@ class okcoinusd extends Exchange {
                 'quote' => $quote,
                 'baseId' => $baseId,
                 'quoteId' => $quoteId,
+                'baseNumericId' => $baseNumericId,
+                'quoteNumericId' => $quoteNumericId,
                 'info' => $markets[$i],
                 'type' => 'spot',
                 'spot' => true,
@@ -254,16 +259,16 @@ class okcoinusd extends Exchange {
         }
         if ($market)
             $symbol = $market['symbol'];
-        $last = floatval ($ticker['last']);
+        $last = $this->safe_float($ticker, 'last');
         return array (
             'symbol' => $symbol,
             'timestamp' => $timestamp,
             'datetime' => $this->iso8601 ($timestamp),
-            'high' => floatval ($ticker['high']),
-            'low' => floatval ($ticker['low']),
-            'bid' => floatval ($ticker['buy']),
+            'high' => $this->safe_float($ticker, 'high'),
+            'low' => $this->safe_float($ticker, 'low'),
+            'bid' => $this->safe_float($ticker, 'buy'),
             'bidVolume' => null,
-            'ask' => floatval ($ticker['sell']),
+            'ask' => $this->safe_float($ticker, 'sell'),
             'askVolume' => null,
             'vwap' => null,
             'open' => null,
@@ -273,7 +278,7 @@ class okcoinusd extends Exchange {
             'change' => null,
             'percentage' => null,
             'average' => null,
-            'baseVolume' => floatval ($ticker['vol']),
+            'baseVolume' => $this->safe_float($ticker, 'vol'),
             'quoteVolume' => null,
             'info' => $ticker,
         );
@@ -316,8 +321,8 @@ class okcoinusd extends Exchange {
             'order' => null,
             'type' => null,
             'side' => $trade['type'],
-            'price' => floatval ($trade['price']),
-            'amount' => floatval ($trade['amount']),
+            'price' => $this->safe_float($trade, 'price'),
+            'amount' => $this->safe_float($trade, 'amount'),
         );
     }
 
@@ -466,6 +471,8 @@ class okcoinusd extends Exchange {
             return 'open';
         if ($status === 2)
             return 'closed';
+        if ($status === 3)
+            return 'open';
         if ($status === 4)
             return 'canceled';
         return $status;
@@ -515,9 +522,12 @@ class okcoinusd extends Exchange {
         $createDateField = $this->get_create_date_field ();
         if (is_array ($order) && array_key_exists ($createDateField, $order))
             $timestamp = $order[$createDateField];
-        $amount = $order['amount'];
-        $filled = $order['deal_amount'];
+        $amount = $this->safe_float($order, 'amount');
+        $filled = $this->safe_float($order, 'deal_amount');
         $remaining = $amount - $filled;
+        if ($type === 'market') {
+            $remaining = 0;
+        }
         $average = $this->safe_float($order, 'avg_price');
         // https://github.com/ccxt/ccxt/issues/2452
         $average = $this->safe_float($order, 'price_avg', $average);
@@ -654,7 +664,7 @@ class okcoinusd extends Exchange {
             'symbol' => $currencyId,
             'withdraw_address' => $address,
             'withdraw_amount' => $amount,
-            'target' => 'address', // or okcn, okcom, okex
+            'target' => 'address', // or 'okcn', 'okcom', 'okex'
         );
         $query = $params;
         if (is_array ($query) && array_key_exists ('chargefee', $query)) {

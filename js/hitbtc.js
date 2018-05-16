@@ -12,7 +12,7 @@ module.exports = class hitbtc extends Exchange {
         return this.deepExtend (super.describe (), {
             'id': 'hitbtc',
             'name': 'HitBTC',
-            'countries': 'UK',
+            'countries': 'HK',
             'rateLimit': 1500,
             'version': '1',
             'has': {
@@ -115,7 +115,7 @@ module.exports = class hitbtc extends Exchange {
                         'AVT': 1.9,
                         'BAS': 113,
                         'BCN': 0.1,
-                        'BET': 124,
+                        'DAO Casino': 124, // id = 'BET'
                         'BKB': 46,
                         'BMC': 32,
                         'BMT': 100,
@@ -310,7 +310,7 @@ module.exports = class hitbtc extends Exchange {
                         'AVT': 0,
                         'BAS': 0,
                         'BCN': 0,
-                        'BET': 0,
+                        'DAO Casino': 0, // id = 'BET'
                         'BKB': 0,
                         'BMC': 0,
                         'BMT': 0,
@@ -483,6 +483,7 @@ module.exports = class hitbtc extends Exchange {
             },
             'commonCurrencies': {
                 'BCC': 'BCC',
+                'BET': 'DAO Casino',
                 'XBT': 'BTC',
                 'DRK': 'DASH',
                 'CAT': 'BitClave',
@@ -500,12 +501,13 @@ module.exports = class hitbtc extends Exchange {
             let id = market['symbol'];
             let baseId = market['commodity'];
             let quoteId = market['currency'];
-            let lot = parseFloat (market['lot']);
-            let step = parseFloat (market['step']);
+            let lot = this.safeFloat (market, 'lot');
+            let step = this.safeFloat (market, 'step');
             let base = this.commonCurrencyCode (baseId);
             let quote = this.commonCurrencyCode (quoteId);
             let symbol = base + '/' + quote;
             result.push ({
+                'info': market,
                 'id': id,
                 'symbol': symbol,
                 'base': base,
@@ -514,7 +516,7 @@ module.exports = class hitbtc extends Exchange {
                 'quoteId': quoteId,
                 'lot': lot,
                 'step': step,
-                'info': market,
+                'active': true,
                 'maker': this.safeFloat (market, 'provideLiquidityRate'),
                 'taker': this.safeFloat (market, 'takeLiquidityRate'),
                 'precision': {
@@ -656,13 +658,13 @@ module.exports = class hitbtc extends Exchange {
         let symbol = undefined;
         if (market)
             symbol = market['symbol'];
-        let amount = parseFloat (trade['execQuantity']);
+        let amount = this.safeFloat (trade, 'execQuantity');
         if (market)
             amount *= market['lot'];
-        let price = parseFloat (trade['execPrice']);
+        let price = this.safeFloat (trade, 'execPrice');
         let cost = price * amount;
         let fee = {
-            'cost': parseFloat (trade['fee']),
+            'cost': this.safeFloat (trade, 'fee'),
             'currency': undefined,
             'rate': undefined,
         };

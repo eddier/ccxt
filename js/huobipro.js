@@ -3,7 +3,7 @@
 //  ---------------------------------------------------------------------------
 
 const Exchange = require ('./base/Exchange');
-const { ExchangeError, ExchangeNotAvailable, InvalidOrder, OrderNotFound } = require ('./base/errors');
+const { ExchangeError, ExchangeNotAvailable, InvalidOrder, OrderNotFound, InsufficientFunds } = require ('./base/errors');
 
 //  ---------------------------------------------------------------------------
 
@@ -80,6 +80,8 @@ module.exports = class huobipro extends Exchange {
                         'dw/withdraw-virtual/addresses', // 查询虚拟币提现地址
                         'dw/deposit-virtual/addresses',
                         'query/deposit-withdraw',
+                        'margin/loan-orders', // 借贷订单
+                        'margin/accounts/balance', // 借贷账户详情
                     ],
                     'post': [
                         'order/orders/place', // 创建并执行一个新订单 (一步下单， 推荐使用)
@@ -92,6 +94,10 @@ module.exports = class huobipro extends Exchange {
                         'dw/withdraw-virtual/create', // 申请提现虚拟币
                         'dw/withdraw-virtual/{id}/place', // 确认申请虚拟币提现
                         'dw/withdraw-virtual/{id}/cancel', // 申请取消提现虚拟币
+                        'dw/transfer-in/margin', // 现货账户划入至借贷账户
+                        'dw/transfer-out/margin', // 借贷账户划出至现货账户
+                        'margin/orders', // 申请借贷
+                        'margin/orders/{id}/repay', // 归还借贷
                     ],
                 },
             },
@@ -104,6 +110,7 @@ module.exports = class huobipro extends Exchange {
                 },
             },
             'exceptions': {
+                'account-frozen-balance-insufficient-error': InsufficientFunds, // {"status":"error","err-code":"account-frozen-balance-insufficient-error","err-msg":"trade account balance is not enough, left: `0.0027`","data":null}
                 'order-limitorder-amount-min-error': InvalidOrder, // limit order amount error, min: `0.001`
                 'order-orderstate-error': OrderNotFound, // canceling an already canceled order
                 'order-queryorder-invalid': OrderNotFound, // querying a non-existent order
@@ -123,7 +130,7 @@ module.exports = class huobipro extends Exchange {
             let keys = Object.keys (limits);
             for (let i = 0; i < keys.length; i++) {
                 let symbol = keys[i];
-                this.markets[symbol] = this.extend (this.markets[symbol], {
+                this.markets[symbol] = this.deepExtend (this.markets[symbol], {
                     'limits': limits[symbol],
                 });
             }
@@ -505,7 +512,7 @@ module.exports = class huobipro extends Exchange {
         let response = await this.privateGetOrderOrders (this.extend ({
             'symbol': market['id'],
             'states': states,
-        }));
+        }, params));
         return this.parseOrders (response['data'], market, since, limit);
     }
 
@@ -566,10 +573,10 @@ module.exports = class huobipro extends Exchange {
         if (market)
             symbol = market['symbol'];
         let timestamp = order['created-at'];
-        let amount = parseFloat (order['amount']);
+        let amount = this.safeFloat (order, 'amount');
         let filled = parseFloat (order['field-amount']);
         let remaining = amount - filled;
-        let price = parseFloat (order['price']);
+        let price = this.safeFloat (order, 'price');
         let cost = parseFloat (order['field-cash-amount']);
         let average = 0;
         if (filled)

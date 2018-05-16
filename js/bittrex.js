@@ -3,7 +3,7 @@
 //  ---------------------------------------------------------------------------
 
 const Exchange = require ('./base/Exchange');
-const { ExchangeError, AuthenticationError, InvalidOrder, InsufficientFunds, OrderNotFound, DDoSProtection, PermissionDenied } = require ('./base/errors');
+const { ExchangeError, ExchangeNotAvailable, AuthenticationError, InvalidOrder, InsufficientFunds, OrderNotFound, DDoSProtection, PermissionDenied } = require ('./base/errors');
 
 //  ---------------------------------------------------------------------------
 
@@ -15,7 +15,6 @@ module.exports = class bittrex extends Exchange {
             'countries': 'US',
             'version': 'v1.1',
             'rateLimit': 1500,
-            'hasAlreadyAuthenticatedSuccessfully': false, // a workaround for APIKEY_INVALID
             // new metainfo interface
             'has': {
                 'CORS': true,
@@ -137,7 +136,8 @@ module.exports = class bittrex extends Exchange {
                 },
             },
             'exceptions': {
-                'Call to Cancel was throttled. Try again in 60 seconds.': DDoSProtection,
+                // 'Call to Cancel was throttled. Try again in 60 seconds.': DDoSProtection,
+                // 'Call to GetBalances was throttled. Try again in 60 seconds.': DDoSProtection,
                 'APISIGN_NOT_PROVIDED': AuthenticationError,
                 'INVALID_SIGNATURE': AuthenticationError,
                 'INVALID_CURRENCY': ExchangeError,
@@ -152,6 +152,7 @@ module.exports = class bittrex extends Exchange {
             },
             'options': {
                 'parseOrderStatus': false,
+                'hasAlreadyAuthenticatedSuccessfully': false, // a workaround for APIKEY_INVALID
             },
         });
     }
@@ -179,7 +180,7 @@ module.exports = class bittrex extends Exchange {
                 'amount': 8,
                 'price': 8,
             };
-            let active = market['IsActive'];
+            let active = market['IsActive'] || market['IsActive'] === 'true';
             result.push ({
                 'id': id,
                 'symbol': symbol,
@@ -394,8 +395,8 @@ module.exports = class bittrex extends Exchange {
             'symbol': market['symbol'],
             'type': 'limit',
             'side': side,
-            'price': parseFloat (trade['Price']),
-            'amount': parseFloat (trade['Quantity']),
+            'price': this.safeFloat (trade, 'Price'),
+            'amount': this.safeFloat (trade, 'Quantity'),
         };
     }
 
@@ -528,7 +529,6 @@ module.exports = class bittrex extends Exchange {
             timestamp = this.parse8601 (order['Opened'] + '+00:00');
         if ('Created' in order)
             timestamp = this.parse8601 (order['Created'] + '+00:00');
-        let iso8601 = (typeof timestamp !== 'undefined') ? this.iso8601 (timestamp) : undefined;
         let lastTradeTimestamp = undefined;
         if (('TimeStamp' in order) && (typeof order['TimeStamp'] !== 'undefined'))
             lastTradeTimestamp = this.parse8601 (order['TimeStamp'] + '+00:00');
@@ -536,6 +536,7 @@ module.exports = class bittrex extends Exchange {
             lastTradeTimestamp = this.parse8601 (order['Closed'] + '+00:00');
         if (typeof timestamp === 'undefined')
             timestamp = lastTradeTimestamp;
+        let iso8601 = (typeof timestamp !== 'undefined') ? this.iso8601 (timestamp) : undefined;
         let fee = undefined;
         let commission = undefined;
         if ('Commission' in order) {
@@ -715,8 +716,14 @@ module.exports = class bittrex extends Exchange {
                 const exceptions = this.exceptions;
                 if (message in exceptions)
                     throw new exceptions[message] (feedback);
+                if (typeof message !== 'undefined') {
+                    if (message.indexOf ('throttled. Try again') >= 0)
+                        throw new DDoSProtection (feedback);
+                    if (message.indexOf ('problem') >= 0)
+                        throw new ExchangeNotAvailable (feedback); // 'There was a problem processing your request.  If this problem persists, please contact...')
+                }
                 if (message === 'APIKEY_INVALID') {
-                    if (this.hasAlreadyAuthenticatedSuccessfully) {
+                    if (this.options['hasAlreadyAuthenticatedSuccessfully']) {
                         throw new DDoSProtection (feedback);
                     } else {
                         throw new AuthenticationError (feedback);
@@ -733,7 +740,7 @@ module.exports = class bittrex extends Exchange {
         let response = await this.fetch2 (path, api, method, params, headers, body);
         // a workaround for APIKEY_INVALID
         if ((api === 'account') || (api === 'market'))
-            this.hasAlreadyAuthenticatedSuccessfully = true;
+            this.options['hasAlreadyAuthenticatedSuccessfully'] = true;
         return response;
     }
 };

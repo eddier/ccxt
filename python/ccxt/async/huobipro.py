@@ -15,6 +15,7 @@ import hashlib
 import math
 import json
 from ccxt.base.errors import ExchangeError
+from ccxt.base.errors import InsufficientFunds
 from ccxt.base.errors import InvalidOrder
 from ccxt.base.errors import OrderNotFound
 from ccxt.base.errors import ExchangeNotAvailable
@@ -94,6 +95,8 @@ class huobipro (Exchange):
                         'dw/withdraw-virtual/addresses',  # 查询虚拟币提现地址
                         'dw/deposit-virtual/addresses',
                         'query/deposit-withdraw',
+                        'margin/loan-orders',  # 借贷订单
+                        'margin/accounts/balance',  # 借贷账户详情
                     ],
                     'post': [
                         'order/orders/place',  # 创建并执行一个新订单(一步下单， 推荐使用)
@@ -106,6 +109,10 @@ class huobipro (Exchange):
                         'dw/withdraw-virtual/create',  # 申请提现虚拟币
                         'dw/withdraw-virtual/{id}/place',  # 确认申请虚拟币提现
                         'dw/withdraw-virtual/{id}/cancel',  # 申请取消提现虚拟币
+                        'dw/transfer-in/margin',  # 现货账户划入至借贷账户
+                        'dw/transfer-out/margin',  # 借贷账户划出至现货账户
+                        'margin/orders',  # 申请借贷
+                        'margin/orders/{id}/repay',  # 归还借贷
                     ],
                 },
             },
@@ -118,6 +125,7 @@ class huobipro (Exchange):
                 },
             },
             'exceptions': {
+                'account-frozen-balance-insufficient-error': InsufficientFunds,  # {"status":"error","err-code":"account-frozen-balance-insufficient-error","err-msg":"trade account balance is not enough, left: `0.0027`","data":null}
                 'order-limitorder-amount-min-error': InvalidOrder,  # limit order amount error, min: `0.001`
                 'order-orderstate-error': OrderNotFound,  # canceling an already canceled order
                 'order-queryorder-invalid': OrderNotFound,  # querying a non-existent order
@@ -136,7 +144,7 @@ class huobipro (Exchange):
             keys = list(limits.keys())
             for i in range(0, len(keys)):
                 symbol = keys[i]
-                self.markets[symbol] = self.extend(self.markets[symbol], {
+                self.markets[symbol] = self.deep_extend(self.markets[symbol], {
                     'limits': limits[symbol],
                 })
         return self.markets
@@ -484,7 +492,7 @@ class huobipro (Exchange):
         response = await self.privateGetOrderOrders(self.extend({
             'symbol': market['id'],
             'states': states,
-        }))
+        }, params))
         return self.parse_orders(response['data'], market, since, limit)
 
     async def fetch_orders(self, symbol=None, since=None, limit=None, params={}):
@@ -534,10 +542,10 @@ class huobipro (Exchange):
         if market:
             symbol = market['symbol']
         timestamp = order['created-at']
-        amount = float(order['amount'])
+        amount = self.safe_float(order, 'amount')
         filled = float(order['field-amount'])
         remaining = amount - filled
-        price = float(order['price'])
+        price = self.safe_float(order, 'price')
         cost = float(order['field-cash-amount'])
         average = 0
         if filled:
