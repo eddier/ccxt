@@ -432,6 +432,8 @@ class bitstamp extends Exchange {
             $request['pair'] = $market['id'];
             $method .= 'Pair';
         }
+        if ($limit !== null)
+            $request['limit'] = $limit;
         $response = $this->$method (array_merge ($request, $params));
         return $this->parse_trades($response, $market, $since, $limit);
     }
@@ -532,8 +534,8 @@ class bitstamp extends Exchange {
 
     public function fetch_open_orders ($symbol = null, $since = null, $limit = null, $params = array ()) {
         $market = null;
+        $this->load_markets();
         if ($symbol !== null) {
-            $this->load_markets();
             $market = $this->market ($symbol);
         }
         $orders = $this->privatePostOpenOrdersAll ();

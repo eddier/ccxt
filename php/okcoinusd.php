@@ -45,8 +45,8 @@ class okcoinusd extends Exchange {
             'api' => array (
                 'web' => array (
                     'get' => array (
-                        'markets/currencies',
-                        'markets/products',
+                        'spot/markets/currencies',
+                        'spot/markets/products',
                     ),
                 ),
                 'public' => array (
@@ -79,6 +79,7 @@ class okcoinusd extends Exchange {
                         'cancel_order',
                         'cancel_otc_order',
                         'cancel_withdraw',
+                        'funds_transfer',
                         'future_batch_trade',
                         'future_cancel',
                         'future_devolve',
@@ -103,6 +104,7 @@ class okcoinusd extends Exchange {
                         'trade',
                         'trade_history',
                         'trade_otc_order',
+                        'wallet_info',
                         'withdraw',
                         'withdraw_info',
                         'unrepayments_info',
@@ -149,7 +151,7 @@ class okcoinusd extends Exchange {
     }
 
     public function fetch_markets () {
-        $response = $this->webGetMarketsProducts ();
+        $response = $this->webGetSpotMarketsProducts ();
         $markets = $response['data'];
         $result = array ();
         $futureMarkets = array (
@@ -340,6 +342,21 @@ class okcoinusd extends Exchange {
         $method .= 'Trades';
         $response = $this->$method (array_merge ($request, $params));
         return $this->parse_trades($response, $market, $since, $limit);
+    }
+
+    public function parse_ohlcv ($ohlcv, $market = null, $timeframe = '1m', $since = null, $limit = null) {
+        $numElements = is_array ($ohlcv) ? count ($ohlcv) : 0;
+        $volumeIndex = ($numElements > 6) ? 6 : 5;
+        return [
+            $ohlcv[0], // timestamp
+            $ohlcv[1], // Open
+            $ohlcv[2], // High
+            $ohlcv[3], // Low
+            $ohlcv[4], // Close
+            // $ohlcv[5], // quote volume
+            // $ohlcv[6], // base volume
+            $ohlcv[$volumeIndex], // okex will return base volume in the 7th element for future markets
+        ];
     }
 
     public function fetch_ohlcv ($symbol, $timeframe = '1m', $since = null, $limit = null, $params = array ()) {
@@ -696,7 +713,9 @@ class okcoinusd extends Exchange {
         $url = '/';
         if ($api !== 'web')
             $url .= $this->version . '/';
-        $url .= $path . $this->extension;
+        $url .= $path;
+        if ($api !== 'web')
+            $url .= $this->extension;
         if ($api === 'private') {
             $this->check_required_credentials();
             $query = $this->keysort (array_merge (array (

@@ -167,6 +167,7 @@ class bittrex (Exchange):
                 'UUID_INVALID': OrderNotFound,
                 'RATE_NOT_PROVIDED': InvalidOrder,  # createLimitBuyOrder('ETH/BTC', 1, 0)
                 'WHITELIST_VIOLATION_IP': PermissionDenied,
+                'INVALID_ORDER': InvalidOrder,
             },
             'options': {
                 'parseOrderStatus': False,
@@ -501,11 +502,12 @@ class bittrex (Exchange):
         if 'Exchange' in order:
             marketId = order['Exchange']
             if marketId in self.markets_by_id:
-                symbol = self.markets_by_id[marketId]['symbol']
+                market = self.markets_by_id[marketId]
+                symbol = market['symbol']
             else:
                 symbol = self.parse_symbol(marketId)
         else:
-            if market:
+            if market is not None:
                 symbol = market['symbol']
         timestamp = None
         if 'Opened' in order:
@@ -530,8 +532,15 @@ class bittrex (Exchange):
             fee = {
                 'cost': float(order[commission]),
             }
-            if market:
+            if market is not None:
                 fee['currency'] = market['quote']
+            elif symbol:
+                currencyIds = symbol.split('/')
+                quoteCurrencyId = currencyIds[1]
+                if quoteCurrencyId in self.currencies_by_id:
+                    fee['currency'] = self.currencies_by_id[quoteCurrencyId]['code']
+                else:
+                    fee['currency'] = self.common_currency_code(quoteCurrencyId)
         price = self.safe_float(order, 'Limit')
         cost = self.safe_float(order, 'Price')
         amount = self.safe_float(order, 'Quantity')
@@ -581,6 +590,8 @@ class bittrex (Exchange):
                 if message == 'UUID_INVALID':
                     raise OrderNotFound(self.id + ' fetchOrder() error: ' + self.last_http_response)
             raise e
+        if not response['result']:
+            raise OrderNotFound(self.id + ' order ' + id + ' not found')
         return self.parse_order(response['result'])
 
     def fetch_closed_orders(self, symbol=None, since=None, limit=None, params={}):

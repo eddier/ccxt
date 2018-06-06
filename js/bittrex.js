@@ -149,6 +149,7 @@ module.exports = class bittrex extends Exchange {
                 'UUID_INVALID': OrderNotFound,
                 'RATE_NOT_PROVIDED': InvalidOrder, // createLimitBuyOrder ('ETH/BTC', 1, 0)
                 'WHITELIST_VIOLATION_IP': PermissionDenied,
+                'INVALID_ORDER': InvalidOrder,
             },
             'options': {
                 'parseOrderStatus': false,
@@ -515,12 +516,14 @@ module.exports = class bittrex extends Exchange {
         let symbol = undefined;
         if ('Exchange' in order) {
             let marketId = order['Exchange'];
-            if (marketId in this.markets_by_id)
-                symbol = this.markets_by_id[marketId]['symbol'];
-            else
+            if (marketId in this.markets_by_id) {
+                market = this.markets_by_id[marketId];
+                symbol = market['symbol'];
+            } else {
                 symbol = this.parseSymbol (marketId);
+            }
         } else {
-            if (market) {
+            if (typeof market !== 'undefined') {
                 symbol = market['symbol'];
             }
         }
@@ -548,8 +551,16 @@ module.exports = class bittrex extends Exchange {
             fee = {
                 'cost': parseFloat (order[commission]),
             };
-            if (market)
+            if (typeof market !== 'undefined') {
                 fee['currency'] = market['quote'];
+            } else if (symbol) {
+                let currencyIds = symbol.split ('/');
+                let quoteCurrencyId = currencyIds[1];
+                if (quoteCurrencyId in this.currencies_by_id)
+                    fee['currency'] = this.currencies_by_id[quoteCurrencyId]['code'];
+                else
+                    fee['currency'] = this.commonCurrencyCode (quoteCurrencyId);
+            }
         }
         let price = this.safeFloat (order, 'Limit');
         let cost = this.safeFloat (order, 'Price');
@@ -604,6 +615,9 @@ module.exports = class bittrex extends Exchange {
                     throw new OrderNotFound (this.id + ' fetchOrder() error: ' + this.last_http_response);
             }
             throw e;
+        }
+        if (!response['result']) {
+            throw new OrderNotFound (this.id + ' order ' + id + ' not found');
         }
         return this.parseOrder (response['result']);
     }

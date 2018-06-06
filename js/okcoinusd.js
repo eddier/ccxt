@@ -44,8 +44,8 @@ module.exports = class okcoinusd extends Exchange {
             'api': {
                 'web': {
                     'get': [
-                        'markets/currencies',
-                        'markets/products',
+                        'spot/markets/currencies',
+                        'spot/markets/products',
                     ],
                 },
                 'public': {
@@ -78,6 +78,7 @@ module.exports = class okcoinusd extends Exchange {
                         'cancel_order',
                         'cancel_otc_order',
                         'cancel_withdraw',
+                        'funds_transfer',
                         'future_batch_trade',
                         'future_cancel',
                         'future_devolve',
@@ -102,6 +103,7 @@ module.exports = class okcoinusd extends Exchange {
                         'trade',
                         'trade_history',
                         'trade_otc_order',
+                        'wallet_info',
                         'withdraw',
                         'withdraw_info',
                         'unrepayments_info',
@@ -148,7 +150,7 @@ module.exports = class okcoinusd extends Exchange {
     }
 
     async fetchMarkets () {
-        let response = await this.webGetMarketsProducts ();
+        let response = await this.webGetSpotMarketsProducts ();
         let markets = response['data'];
         let result = [];
         const futureMarkets = {
@@ -339,6 +341,21 @@ module.exports = class okcoinusd extends Exchange {
         method += 'Trades';
         let response = await this[method] (this.extend (request, params));
         return this.parseTrades (response, market, since, limit);
+    }
+
+    parseOHLCV (ohlcv, market = undefined, timeframe = '1m', since = undefined, limit = undefined) {
+        let numElements = ohlcv.length;
+        let volumeIndex = (numElements > 6) ? 6 : 5;
+        return [
+            ohlcv[0], // timestamp
+            ohlcv[1], // Open
+            ohlcv[2], // High
+            ohlcv[3], // Low
+            ohlcv[4], // Close
+            // ohlcv[5], // quote volume
+            // ohlcv[6], // base volume
+            ohlcv[volumeIndex], // okex will return base volume in the 7th element for future markets
+        ];
     }
 
     async fetchOHLCV (symbol, timeframe = '1m', since = undefined, limit = undefined, params = {}) {
@@ -695,7 +712,9 @@ module.exports = class okcoinusd extends Exchange {
         let url = '/';
         if (api !== 'web')
             url += this.version + '/';
-        url += path + this.extension;
+        url += path;
+        if (api !== 'web')
+            url += this.extension;
         if (api === 'private') {
             this.checkRequiredCredentials ();
             let query = this.keysort (this.extend ({

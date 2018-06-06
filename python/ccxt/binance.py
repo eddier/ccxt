@@ -67,6 +67,7 @@ class binance (Exchange):
                     'v1': 'https://api.binance.com/api/v1',
                 },
                 'www': 'https://www.binance.com',
+                'referral': 'https://www.binance.com/?ref=10205187',
                 'doc': 'https://github.com/binance-exchange/binance-official-api-docs/blob/master/rest-api.md',
                 'fees': [
                     'https://binance.zendesk.com/hc/en-us/articles/115000429332',
@@ -266,6 +267,7 @@ class binance (Exchange):
             },
             # exchange-specific options
             'options': {
+                'defaultTimeInForce': 'GTC',  # 'GTC' = Good To Cancel(default), 'IOC' = Immediate Or Cancel
                 'defaultLimitOrderType': 'limit',  # or 'limit_maker'
                 'hasAlreadyAuthenticatedSuccessfully': False,
                 'warnOnFetchOpenOrdersWithoutSymbol': True,
@@ -281,6 +283,7 @@ class binance (Exchange):
                 '-2010': InsufficientFunds,  # createOrder -> 'Account has insufficient balance for requested action.'
                 '-2011': OrderNotFound,  # cancelOrder(1, 'BTC/USDT') -> 'UNKNOWN_ORDER'
                 '-2013': OrderNotFound,  # fetchOrder(1, 'BTC/USDT') -> 'Order does not exist'
+                '-2014': AuthenticationError,  # {"code":-2014, "msg": "API-key format invalid."}
                 '-2015': AuthenticationError,  # "Invalid API-key, IP, or permissions for action."
             },
         })
@@ -457,7 +460,7 @@ class binance (Exchange):
             tickers.append(self.parse_ticker(rawTickers[i]))
         return self.filter_by_array(tickers, 'symbol', symbols)
 
-    def fetch_bid_asks(self, symbols=None, params={}):
+    def fetch_bids_asks(self, symbols=None, params={}):
         self.load_markets()
         rawTickers = self.publicGetTickerBookTicker(params)
         return self.parse_tickers(rawTickers, symbols)
@@ -628,7 +631,7 @@ class binance (Exchange):
             order['type'] = self.options['defaultLimitOrderType'].upper()
             order = self.extend(order, {
                 'price': self.price_to_precision(symbol, price),
-                'timeInForce': 'GTC',  # 'GTC' = Good To Cancel(default), 'IOC' = Immediate Or Cancel
+                'timeInForce': self.options['defaultTimeInForce'],  # 'GTC' = Good To Cancel(default), 'IOC' = Immediate Or Cancel
             })
         elif type == 'limit_maker':
             order['price'] = self.price_to_precision(symbol, price)

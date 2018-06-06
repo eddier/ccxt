@@ -16,12 +16,12 @@ The structure of the library can be outlined as follows:
     │                              .                              |
     |       loadMarkets            .           fetchBalance       |
     |       fetchMarkets           .            createOrder       |
-    |       fetchTicker            .            cancelOrder       |
-    |       fetchTickers           .             fetchOrder       |
-    |       fetchOrderBook         .            fetchOrders       |
-    |       fetchOHLCV             .        fetchOpenOrders       |
-    |       fetchTrades            .      fetchClosedOrders       |
-    |                              .          fetchMyTrades       |
+    |       fetchCurrencies        .            cancelOrder       |
+    |       fetchTicker            .             fetchOrder       |
+    |       fetchTickers           .            fetchOrders       |
+    |       fetchOrderBook         .        fetchOpenOrders       |
+    |       fetchOHLCV             .      fetchClosedOrders       |
+    |       fetchTrades            .          fetchMyTrades       |
     |                              .                deposit       |
     |                              .               withdraw       |
     │                              .                              |
@@ -53,7 +53,7 @@ Full public and private HTTP REST APIs for all exchanges are implemented. WebSoc
 
 # Exchanges
 
-The ccxt library currently supports the following 115 cryptocurrency exchange markets and trading APIs:
+The ccxt library currently supports the following 116 cryptocurrency exchange markets and trading APIs:
 
 |                                                                                                                           | id                 | name                                                                         | ver | doc                                                                                          | countries                               |
 |---------------------------------------------------------------------------------------------------------------------------|--------------------|------------------------------------------------------------------------------|:---:|:--------------------------------------------------------------------------------------------:|-----------------------------------------|
@@ -63,10 +63,10 @@ The ccxt library currently supports the following 115 cryptocurrency exchange ma
 |![allcoin](https://user-images.githubusercontent.com/1294454/31561809-c316b37c-b061-11e7-8d5a-b547b4d730eb.jpg)            | allcoin            | [Allcoin](https://www.allcoin.com)                                           | 1   | [API](https://www.allcoin.com/About/APIReference)                                            | Canada                                  |
 |![anxpro](https://user-images.githubusercontent.com/1294454/27765983-fd8595da-5ec9-11e7-82e3-adb3ab8c2612.jpg)             | anxpro             | [ANXPro](https://anxpro.com)                                                 | 2   | [API](http://docs.anxv2.apiary.io)                                                           | Japan, Singapore, Hong Kong, New Zealand|
 |![bibox](https://user-images.githubusercontent.com/1294454/34902611-2be8bf1a-f830-11e7-91a2-11b2f292e750.jpg)              | bibox              | [Bibox](https://www.bibox.com)                                               | 1   | [API](https://github.com/Biboxcom/api_reference/wiki/home_en)                                | China, US, South Korea                  |
-|![binance](https://user-images.githubusercontent.com/1294454/29604020-d5483cdc-87ee-11e7-94c7-d1a8d9169293.jpg)            | binance            | [Binance](https://www.binance.com)                                           | *   | [API](https://github.com/binance-exchange/binance-official-api-docs/blob/master/rest-api.md) | Japan                                   |
+|![binance](https://user-images.githubusercontent.com/1294454/29604020-d5483cdc-87ee-11e7-94c7-d1a8d9169293.jpg)            | binance            | [Binance](https://www.binance.com/?ref=10205187)                             | *   | [API](https://github.com/binance-exchange/binance-official-api-docs/blob/master/rest-api.md) | Japan                                   |
 |![bit2c](https://user-images.githubusercontent.com/1294454/27766119-3593220e-5ece-11e7-8b3a-5a041f6bcc3f.jpg)              | bit2c              | [Bit2C](https://www.bit2c.co.il)                                             | *   | [API](https://www.bit2c.co.il/home/api)                                                      | Israel                                  |
 |![bitbank](https://user-images.githubusercontent.com/1294454/37808081-b87f2d9c-2e59-11e8-894d-c1900b7584fe.jpg)            | bitbank            | [bitbank](https://bitbank.cc/)                                               | 1   | [API](https://docs.bitbank.cc/)                                                              | Japan                                   |
-|![bitbay](https://user-images.githubusercontent.com/1294454/27766132-978a7bd8-5ece-11e7-9540-bc96d1e9bbb8.jpg)             | bitbay             | [BitBay](https://bitbay.net)                                                 | *   | [API](https://bitbay.net/public-api)                                                         | Poland, EU                              |
+|![bitbay](https://user-images.githubusercontent.com/1294454/27766132-978a7bd8-5ece-11e7-9540-bc96d1e9bbb8.jpg)             | bitbay             | [BitBay](https://bitbay.net)                                                 | *   | [API](https://bitbay.net/public-api)                                                         | Malta, EU                               |
 |![bitfinex](https://user-images.githubusercontent.com/1294454/27766244-e328a50c-5ed2-11e7-947b-041416579bb3.jpg)           | bitfinex           | [Bitfinex](https://www.bitfinex.com)                                         | 1   | [API](https://bitfinex.readme.io/v1/docs)                                                    | British Virgin Islands                  |
 |![bitfinex2](https://user-images.githubusercontent.com/1294454/27766244-e328a50c-5ed2-11e7-947b-041416579bb3.jpg)          | bitfinex2          | [Bitfinex v2](https://www.bitfinex.com)                                      | 2   | [API](https://bitfinex.readme.io/v2/docs)                                                    | British Virgin Islands                  |
 |![bitflyer](https://user-images.githubusercontent.com/1294454/28051642-56154182-660e-11e7-9b0d-6042d1e6edd8.jpg)           | bitflyer           | [bitFlyer](https://bitflyer.jp)                                              | 1   | [API](https://bitflyer.jp/API)                                                               | Japan                                   |
@@ -97,6 +97,7 @@ The ccxt library currently supports the following 115 cryptocurrency exchange ma
 |![chbtc](https://user-images.githubusercontent.com/1294454/28555659-f0040dc2-7109-11e7-9d99-688a438bf9f4.jpg)              | chbtc              | [CHBTC](https://trade.chbtc.com/api)                                         | 1   | [API](https://www.chbtc.com/i/developer)                                                     | China                                   |
 |![chilebit](https://user-images.githubusercontent.com/1294454/27991414-1298f0d8-647f-11e7-9c40-d56409266336.jpg)           | chilebit           | [ChileBit](https://chilebit.net)                                             | 1   | [API](https://blinktrade.com/docs)                                                           | Chile                                   |
 |![cobinhood](https://user-images.githubusercontent.com/1294454/35755576-dee02e5c-0878-11e8-989f-1595d80ba47f.jpg)          | cobinhood          | [COBINHOOD](https://cobinhood.com)                                           | *   | [API](https://cobinhood.github.io/api-public)                                                | Taiwan                                  |
+|![coinbase](https://user-images.githubusercontent.com/1294454/40811661-b6eceae2-653a-11e8-829e-10bfadb078cf.jpg)           | coinbase           | [coinbase](https://www.coinbase.com)                                         | 2   | [API](https://developers.coinbase.com/api/v2)                                                | US                                      |
 |![coincheck](https://user-images.githubusercontent.com/1294454/27766464-3b5c3c74-5ed9-11e7-840e-31b32968e1da.jpg)          | coincheck          | [coincheck](https://coincheck.com)                                           | *   | [API](https://coincheck.com/documents/exchange/api)                                          | Japan, Indonesia                        |
 |![coinegg](https://user-images.githubusercontent.com/1294454/36770310-adfa764e-1c5a-11e8-8e09-449daac3d2fb.jpg)            | coinegg            | [CoinEgg](https://www.coinegg.com)                                           | *   | [API](https://www.coinegg.com/explain.api.html)                                              | China, UK                               |
 |![coinex](https://user-images.githubusercontent.com/1294454/38046312-0b450aac-32c8-11e8-99ab-bc6b136b6cc7.jpg)             | coinex             | [CoinEx](https://www.coinex.com)                                             | 1   | [API](https://github.com/coinexcom/coinex_exchange_api/wiki)                                 | China                                   |
@@ -109,7 +110,7 @@ The ccxt library currently supports the following 115 cryptocurrency exchange ma
 |![coinone](https://user-images.githubusercontent.com/1294454/38003300-adc12fba-323f-11e8-8525-725f53c4a659.jpg)            | coinone            | [CoinOne](https://coinone.co.kr)                                             | 2   | [API](https://doc.coinone.co.kr)                                                             | South Korea                             |
 |![coinsecure](https://user-images.githubusercontent.com/1294454/27766472-9cbd200a-5ed9-11e7-9551-2267ad7bac08.jpg)         | coinsecure         | [Coinsecure](https://coinsecure.in)                                          | 1   | [API](https://api.coinsecure.in)                                                             | India                                   |
 |![coinspot](https://user-images.githubusercontent.com/1294454/28208429-3cacdf9a-6896-11e7-854e-4c79a772a30f.jpg)           | coinspot           | [CoinSpot](https://www.coinspot.com.au)                                      | *   | [API](https://www.coinspot.com.au/api)                                                       | Australia                               |
-|![cointiger](https://user-images.githubusercontent.com/1294454/39797261-d58df196-5363-11e8-9880-2ec78ec5bd25.jpg)          | cointiger          | [CoinTiger](https://www.cointiger.com/exchange/register.html?refCode=FfvDtt) | 1   | [API](https://github.com/cointiger/api-docs-en/wiki)                                         | China                                   |
+|![cointiger](https://user-images.githubusercontent.com/1294454/39797261-d58df196-5363-11e8-9880-2ec78ec5bd25.jpg)          | cointiger          | [CoinTiger](https://www.cointiger.pro/exchange/register.html?refCode=FfvDtt) | 1   | [API](https://github.com/cointiger/api-docs-en/wiki)                                         | China                                   |
 |![coolcoin](https://user-images.githubusercontent.com/1294454/36770529-be7b1a04-1c5b-11e8-9600-d11f1996b539.jpg)           | coolcoin           | [CoolCoin](https://www.coolcoin.com)                                         | *   | [API](https://www.coolcoin.com/help.api.html)                                                | Hong Kong                               |
 |![cryptopia](https://user-images.githubusercontent.com/1294454/29484394-7b4ea6e2-84c6-11e7-83e5-1fccf4b2dc81.jpg)          | cryptopia          | [Cryptopia](https://www.cryptopia.co.nz/Register?referrer=kroitor)           | *   | [API](https://www.cryptopia.co.nz/Forum/Category/45)                                         | New Zealand                             |
 |![dsx](https://user-images.githubusercontent.com/1294454/27990275-1413158a-645a-11e7-931c-94717f7510e3.jpg)                | dsx                | [DSX](https://dsx.uk)                                                        | 3   | [API](https://api.dsx.uk)                                                                    | UK                                      |
@@ -125,15 +126,15 @@ The ccxt library currently supports the following 115 cryptocurrency exchange ma
 |![gdax](https://user-images.githubusercontent.com/1294454/27766527-b1be41c6-5edb-11e7-95f6-5b496c469e2c.jpg)               | gdax               | [GDAX](https://www.gdax.com)                                                 | *   | [API](https://docs.gdax.com)                                                                 | US                                      |
 |![gemini](https://user-images.githubusercontent.com/1294454/27816857-ce7be644-6096-11e7-82d6-3c257263229c.jpg)             | gemini             | [Gemini](https://gemini.com)                                                 | 1   | [API](https://docs.gemini.com/rest-api)                                                      | US                                      |
 |![getbtc](https://user-images.githubusercontent.com/1294454/33801902-03c43462-dd7b-11e7-992e-077e4cd015b9.jpg)             | getbtc             | [GetBTC](https://getbtc.org)                                                 | *   | [API](https://getbtc.org/api-docs.php)                                                       | St. Vincent & Grenadines, Russia        |
-|![hadax](https://user-images.githubusercontent.com/1294454/38059952-4756c49e-32f1-11e8-90b9-45c1eccba9cd.jpg)              | hadax              | [HADAX](https://www.hadax.com)                                               | 1   | [API](https://github.com/huobiapi/API_Docs/wiki)                                             | China                                   |
-|![hitbtc](https://user-images.githubusercontent.com/1294454/27766555-8eaec20e-5edc-11e7-9c5b-6dc69fc42f5e.jpg)             | hitbtc             | [HitBTC](https://hitbtc.com)                                                 | 1   | [API](https://github.com/hitbtc-com/hitbtc-api/blob/master/APIv1.md)                         | Hong Kong                               |
+|![hadax](https://user-images.githubusercontent.com/1294454/38059952-4756c49e-32f1-11e8-90b9-45c1eccba9cd.jpg)              | hadax              | [HADAX](https://www.huobi.br.com/en-us/topic/invited/?invite_code=rwrd3)     | 1   | [API](https://github.com/huobiapi/API_Docs/wiki)                                             | China                                   |
+|![hitbtc](https://user-images.githubusercontent.com/1294454/27766555-8eaec20e-5edc-11e7-9c5b-6dc69fc42f5e.jpg)             | hitbtc             | [HitBTC](https://hitbtc.com/?ref_id=5a5d39a65d466)                           | 1   | [API](https://github.com/hitbtc-com/hitbtc-api/blob/master/APIv1.md)                         | Hong Kong                               |
 |![hitbtc2](https://user-images.githubusercontent.com/1294454/27766555-8eaec20e-5edc-11e7-9c5b-6dc69fc42f5e.jpg)            | hitbtc2            | [HitBTC v2](https://hitbtc.com/?ref_id=5a5d39a65d466)                        | 2   | [API](https://api.hitbtc.com)                                                                | Hong Kong                               |
 |![huobi](https://user-images.githubusercontent.com/1294454/27766569-15aa7b9a-5edd-11e7-9e7f-44791f4ee49c.jpg)              | huobi              | [Huobi](https://www.huobi.com)                                               | 3   | [API](https://github.com/huobiapi/API_Docs_en/wiki)                                          | China                                   |
-|![huobicny](https://user-images.githubusercontent.com/1294454/27766569-15aa7b9a-5edd-11e7-9e7f-44791f4ee49c.jpg)           | huobicny           | [Huobi CNY](https://www.huobi.com)                                           | 1   | [API](https://github.com/huobiapi/API_Docs/wiki/REST_api_reference)                          | China                                   |
-|![huobipro](https://user-images.githubusercontent.com/1294454/27766569-15aa7b9a-5edd-11e7-9e7f-44791f4ee49c.jpg)           | huobipro           | [Huobi Pro](https://www.huobipro.com)                                        | 1   | [API](https://github.com/huobiapi/API_Docs/wiki/REST_api_reference)                          | China                                   |
+|![huobicny](https://user-images.githubusercontent.com/1294454/27766569-15aa7b9a-5edd-11e7-9e7f-44791f4ee49c.jpg)           | huobicny           | [Huobi CNY](https://www.huobi.br.com/en-us/topic/invited/?invite_code=rwrd3) | 1   | [API](https://github.com/huobiapi/API_Docs/wiki/REST_api_reference)                          | China                                   |
+|![huobipro](https://user-images.githubusercontent.com/1294454/27766569-15aa7b9a-5edd-11e7-9e7f-44791f4ee49c.jpg)           | huobipro           | [Huobi Pro](https://www.huobi.br.com/en-us/topic/invited/?invite_code=rwrd3) | 1   | [API](https://github.com/huobiapi/API_Docs/wiki/REST_api_reference)                          | China                                   |
 |![ice3x](https://user-images.githubusercontent.com/1294454/38012176-11616c32-3269-11e8-9f05-e65cf885bb15.jpg)              | ice3x              | [ICE3X](https://ice3x.com)                                                   | *   | [API](https://ice3x.co.za/ice-cubed-bitcoin-exchange-api-documentation-1-june-2017)          | South Africa                            |
 |![independentreserve](https://user-images.githubusercontent.com/1294454/30521662-cf3f477c-9bcb-11e7-89bc-d1ac85012eda.jpg) | independentreserve | [Independent Reserve](https://www.independentreserve.com)                    | *   | [API](https://www.independentreserve.com/API)                                                | Australia, New Zealand                  |
-|![indodax](https://user-images.githubusercontent.com/1294454/37443283-2fddd0e4-281c-11e8-9741-b4f1419001b5.jpg)            | indodax            | [INDODAX](https://www.indodax.com)                                           | 1.7 | [API](https://indodax.com/downloads/BITCOINCOID-API-DOCUMENTATION.pdf)                       | Indonesia                               |
+|![indodax](https://user-images.githubusercontent.com/1294454/37443283-2fddd0e4-281c-11e8-9741-b4f1419001b5.jpg)            | indodax            | [INDODAX](https://www.indodax.com)                                           | 1.8 | [API](https://indodax.com/downloads/BITCOINCOID-API-DOCUMENTATION.pdf)                       | Indonesia                               |
 |![itbit](https://user-images.githubusercontent.com/1294454/27822159-66153620-60ad-11e7-89e7-005f6d7f3de0.jpg)              | itbit              | [itBit](https://www.itbit.com)                                               | 1   | [API](https://api.itbit.com/docs)                                                            | US                                      |
 |![jubi](https://user-images.githubusercontent.com/1294454/27766581-9d397d9a-5edd-11e7-8fb9-5d8236c0e692.jpg)               | jubi               | [jubi.com](https://www.jubi.com)                                             | 1   | [API](https://www.jubi.com/help/api.html)                                                    | China                                   |
 |![kraken](https://user-images.githubusercontent.com/1294454/27766599-22709304-5ede-11e7-9de1-9f33732e1509.jpg)             | kraken             | [Kraken](https://www.kraken.com)                                             | 0   | [API](https://www.kraken.com/en-us/help/api)                                                 | US                                      |
@@ -324,7 +325,7 @@ Below is a detailed description of each of the base exchange properties:
 
 - `has`: This is an associative array of exchange capabilities (e.g `fetchTickers`, `fetchOHLCV` or `CORS`).
 
-- `timeframes`: An associative array of timeframes, supported by the fetchOHLCV method of the exchange. This is only populated when `has['fetchTickers']` property is true.
+- `timeframes`: An associative array of timeframes, supported by the fetchOHLCV method of the exchange. This is only populated when `has['fetchOHLCV']` property is true.
 
 - `timeout`: A timeout in milliseconds for a request-response roundtrip (default timeout is 10000 ms = 10 seconds). You should always set it to a reasonable value, hanging forever with no timeout is not your option, for sure.
 
@@ -395,9 +396,9 @@ Below is a detailed description of each of the base exchange properties:
 
     The meaning of each flag showing availability of this or that method is:
 
-      - boolean `true` means the method is natively available from the exchange API and unified in the ccxt library
-      - boolean `false` means the method isn't natively available from the exchange API or not unified in the ccxt library yet
-      - an `'emulated'` string means the endpoint isn't natively available from the exchange API but reconstructed by the ccxt library from available true-methods
+    - boolean `true` means the method is natively available from the exchange API and unified in the ccxt library
+    - boolean `false` means the method isn't natively available from the exchange API or not unified in the ccxt library yet
+    - an `'emulated'` string means the endpoint isn't natively available from the exchange API but reconstructed by the ccxt library from available true-methods
 
 ## Rate Limit
 
@@ -675,7 +676,18 @@ Historically various symbolic names have been used to designate same trading pai
 - `DSH → DASH`: Try not to confuse symbols and currencies. The `DSH` (Dashcoin) is not the same as `DASH` (Dash). Some exchanges have `DASH` labelled inconsistently as `DSH`, the ccxt library does a correction for that as well (`DSH → DASH`), but only on certain exchanges that have these two currencies confused, whereas most exchanges have them both correct. Just remember that `DASH/BTC` is not the same as `DSH/BTC`.
 - `NANO` → `XRB`: `NANO` is the newer code for Raiblocks, however, CCXT unified API uses the older `XRB` for backward-compatibility with existing exchanges and data providers.
 
-### Consistency Of Base And Quote Currencies
+#### Notes On Naming Consistency
+
+Each exchange has an associative array of substitutions for cryptocurrency symbolic codes in the `exchange.commonCurrencies` property. Sometimes the user may notice exotic symbol names with mixed-case words and spaces in the code. The logic behind having these names is explained by the rules for resolving conflicts in naming and currency-coding when one or more currencies have the same symbolic code with different exchanges:
+
+- First, we gather all info available from the exchanges themselves about the currency codes in question. They usually have a description of their coin listings somewhere in their API or their docs, knowledgebases or elsewhere on their websites.
+- When we identify each particular cryptocurrency standing behind the currency code, we look them up on [CoinMarketCap](https://coinmarketcap.com).
+- The currency that has the greatest market capitalization of all wins the currency code and keeps it. For example, HMC often stand for either `Hi Mutual Society` or `HarmonyCoin`. In this case `Hi Mutual Society` retains the code `HMC`, and `HarmonyCoin` will have its name as its code, literally, `HarmonyCoin`. So, there may be trading pairs with symbols like `HMC/USD` (for `Hi Mutual Society`) and `HarmonyCoin/USD` – those are two different markets.
+- If market cap of a particular coin is unknown or is not enough to determine the winner, we also take trading volumes and other factors into consideration.
+- When the winner is determined all other competing currencies get their code names properly remapped and substituted within conflicting exchanges via `.commonCurrencies`.
+- Unfortunately this is a work in progress, because new currencies get listed daily and new exchanges are added from time to time, so, in general this is a never-ending process of self-correction in a quickly changing environment, practically, in *"live mode"*. We are thankful for all reported conflicts and mismatches you may find.
+
+#### Consistency Of Base And Quote Currencies
 
 It depends on which exchange you are using, but some of them have a reversed (inconsistent) pairing of `base` and `quote`. They actually have base and quote misplaced  (switched/reversed sides). In that case you'll see a difference of parsed `base` and `quote` currency values with the unparsed `info` in the market substructure.
 
@@ -908,12 +920,51 @@ The unified ccxt API is a subset of methods common among the exchanges. It curre
 - `createMarketSellOrder (symbol, amount[, params])`
 - `cancelOrder (id[, symbol[, params]])`
 - `fetchOrder (id[, symbol[, params]])`
-- `fetchOrders ([symbol[, params]])`
-- `fetchOpenOrders ([symbol[, params]])`
-- `fetchClosedOrders ([symbol[, params]])`
+- `fetchOrders ([symbol[, since[, limit[, params]]]])`
+- `fetchOpenOrders ([symbol[, since, limit, params]]]])`
+- `fetchClosedOrders ([symbol[, since[, limit[, params]]]])`
+- `fetchMyTrades ([symbol[, since[, limit[, params]]]])`
 - ...
 
+### Overriding Unified API Params
+
 Note, that most of methods of the unified API accept an optional `params` parameter. It is an associative array (a dictionary, empty by default) containing the params you want to override. The contents of `params` are exchange-specific, consult the exchanges' API documentation for supported fields and values. Use the `params` dictionary if you need to pass a custom setting or an optional parameter to your unified query.
+
+```JavaScript
+// JavaScript
+(async () => {
+
+    const params = {
+        'foo': 'bar',      // exchange-specific overrides in unified queries
+        'Hello': 'World!', // see their docs for more details on parameter names
+    }
+
+    // the overrides go into the last argument to the unified call ↓ HERE
+    const result = await exchange.fetchOrderBook (symbol, length, params)
+}) ()
+```
+
+```Python
+# Python
+params = {
+    'foo': 'bar',       # exchange-specific overrides in unified queries
+    'Hello': 'World!',  # see their docs for more details on parameter names
+}
+
+# overrides go in the last argument to the unified call ↓ HERE
+result = exchange.fetch_order_book(symbol, length, params)
+```
+
+```PHP
+// PHP
+$params = array (
+    'foo' => 'bar',       // exchange-specific overrides in unified queries
+    'Hello' => 'World!',  // see their docs for more details on parameter names
+}
+
+// overrides go into the last argument to the unified call ↓ HERE
+$result = $exchange->fetch_order_book ($symbol, $length, $params);
+```
 
 # Market Data
 
@@ -1752,6 +1803,10 @@ Most of methods returning orders within ccxt unified API will usually yield an o
 - The `lastTradeTimestamp` timestamp may have no value and may be `undefined/None/null` where not supported by the exchange or in case of an open order (an order that has not been filled nor partially filled yet).
 - The `lastTradeTimestamp`, if any, designates the timestamp of the last trade, in case the order is filled fully or partially, otherwise `lastTradeTimestamp` is `undefined/None/null`.
 - Order `status` prevails or has precedence over the `lastTradeTimestamp`.
+- The `cost` of an order is:
+  - `if (status === 'open' and filled === 0) { amount * price }`
+  - `if (status === 'closed' || status === 'canceled') { filled * price }`
+- The `cost` of an order means the total *quote* volume of the order (whereas the `amount` is the *base* volume). The value of `cost` should be as close to the actual most recent known order cost as possible. The `cost` field itself is there mostly for convenience and can be deduced from other fields.
 
 ### Placing Orders
 
@@ -1780,8 +1835,6 @@ Market price orders are also known as *spot price orders*, *instant orders* or s
 
 The exchange will close your market order for the best price available. You are not guaranteed though, that the order will be executed for the price you observe prior to placing your order. There can be a slight change of the price for the traded market while your order is being executed, also known as *price slippage*. The price can slip because of networking roundtrip latency, high loads on the exchange, price volatility and other factors. When placing a market order you don't need to specify the price of the order.
 
-Note, that some exchanges will not accept market orders (they allow limit orders only).
-
 ```
 // camelCaseNotation
 exchange.createMarketBuyOrder (symbol, amount[, params])
@@ -1791,6 +1844,32 @@ exchange.createMarketSellOrder (symbol, amount[, params])
 exchange.create_market_buy_order (symbol, amount[, params])
 exchange.create_market_sell_order (symbol, amount[, params])
 ```
+
+**Note, that some exchanges will not accept market orders (they allow limit orders only).** In order to detect programmatically if the exchange in question does support market orders or not, you can use the `.has['createMarketOrder']` exchange property:
+
+```JavaScript
+// JavaScript
+if (exchange.has['createMarketOrder']) {
+    ...
+}
+```
+
+```Python
+# Python
+if exchange.has['createMarketOrder']:
+    ...
+```
+
+```PHP
+// PHP
+if ($exchange->has['createMarketOrder']) {
+    ...
+}
+```
+
+It is also possible to emulate a `market` order with a `limit` order. **WARNING this method can be risky due to high volatility, use it at your own risk and only use it when you know really well what you're doing!**. Most of the time a `market sell` can be emulated with a `limit sell` at a very low price – the exchange will automatically make it a taker order for market price (the price that is currently in your best interest from the ones that are available in the order book). When the exchange detects that you're selling for a very low price it will automatically offer you the best buyer price available from the order book. That is effectively the same as placing a market sell order. Thus market orders can be emulated with limit orders (where missing). The opposite is also true – a `market buy` can be emulated with a `limit buy` for a very high price. Most exchanges will again close your order for best available price, that is, the market price.
+
+However, you should never rely on that entirely, **ALWAYS test it with a small amount first!**. You can try that in their web interface first to verify the logic. You can sell the minimal amount at a specified limit price (an affordable amount to lose, just in case) and then check the actual filling price in trade history.
 
 #### Limit Orders
 
@@ -1966,9 +2045,9 @@ Returns ordered array `[]` of trades (most recent trade last).
 }
 ```
 
-**The work on `'fee'` info is still in progress, fee info may be missing partially or entirely, depending on the exchange capabilities.**
-
-**The `fee` currency may be different from both traded currencies (for example, an ETH/BTC order with fees in USD).**
+- The work on `'fee'` info is still in progress, fee info may be missing partially or entirely, depending on the exchange capabilities.
+- The `fee` currency may be different from both traded currencies (for example, an ETH/BTC order with fees in USD).
+- The `cost` of the trade means `amount * price`. It is the total *quote* volume of the trade (whereas `amount` is the *base* volume). The cost field itself is there mostly for convenience and can be deduced from other fields.
 
 ### Trades By Order Id
 
@@ -2004,6 +2083,8 @@ createDepositAddress (code, params = {})
 
 With certain currencies, like AEON, BTS, GXS, NXT, SBD, STEEM, STR, XEM, XLM, XMR, XRP, an additional argument `tag` is usually required by exchanges. The tag is a memo or a message or a payment id that is attached to a withdrawal transaction. The tag is mandatory for those currencies and it identifies the recipient user account.
 
+Be careful when specifying the `tag` and the `address`. The `tag` is **NOT an arbitrary user-defined string** of your choice! You cannot send user messages and comments in the `tag`. The purpose of the `tag` field is to address your wallet properly, so it must be correct. You should only use the `tag` received from the exchange you're working with, otherwise your withdrawal transaction might not arrive to its destination ever.
+
 ### Withdraw
 
 ```JavaScript
@@ -2035,6 +2116,72 @@ The withdraw method returns a dictionary containing the withdrawal id, which is 
 Some exchanges require a manual approval of each withdrawal by means of 2FA (2-factor authentication). In order to approve your withdrawal you usually have to either click their secret link in your email inbox or enter a Google Authenticator code or an Authy code on their website to verify that withdrawal transaction was requested intentionally.
 
 In some cases you can also use the withdrawal id to check withdrawal status later (whether it succeeded or not) and to submit 2FA confirmation codes, where this is supported by the exchange. See [their docs](https://github.com/ccxt/ccxt/wiki/Manual#exchanges) for details.
+
+## Fees
+
+**This section of the Unified CCXT API is under development.**
+
+Fees are often grouped into two categories:
+
+- Trading fees. Trading fee is the amount payable to the exchange, usually a percentage of volume traded (filled)).
+- Funding fees. The amount payable to the exchange upon depositing and withdrawing as well as the underlying crypto transaction fees (tx fees).
+
+Because the fee structure can depend on the actual volume of currencies traded by the user, the fees can be account-specific. Methods to work with account-specific fees:
+
+```
+fetchFees (params = {})
+fetchTradingFees (params = {})
+fetchFundingFees (params = {})
+```
+
+The fee methods will return a unified fee structure, which is often present with orders and trades as well. The fee structure is a common format for representing the fee info throughout the library. Fee structures are usually indexed by market or currency.
+
+Because this is still a work in progress, some or all of methods and info described in this section may be missing with this or that exchange.
+
+**DO NOT use the `.fees` property as most often it contains the predefined/hardcoded info, which is now deprecated. Actual fees should only be accessed from markets and currencies.**
+
+### Fee structure
+
+```Javascript
+{
+    'type': takerOrMaker,
+    'currency': 'BTC', // the unified fee currency code
+    'rate': percentage, // the fee rate, 0.05% = 0.0005, 1% = 0.01, ...
+    'cost': feePaid, // the fee cost (amount * fee rate)
+}
+```
+
+### Trading Fees
+
+Trading fees are properties of markets. Most often trading fees are loaded into the markets by the `fetchMarkets` call. Sometimes, however, the exchanges serve fees from different endpoints.
+
+The `calculateFee` method can be used to precalculate trading fees that will be paid. **WARNING! This method is experimental, unstable and may produce incorrect results in certain cases**. You should only use it with caution. Actual fees may be different from the values returned from `calculateFee`, this is just for precalculation.  Do not rely on precalculated values, because market conditions change frequently. It is difficult to know in advance whether your order will be a market taker or maker.
+
+```Javascript
+    calculateFee (symbol, type, side, amount, price, takerOrMaker = 'taker', params = {})
+```
+
+The `calculateFee` method will return a unified fee structure with precalculated fees for an order with specified params.
+
+Accessing trading fee rates should be done via the `.markets` property, like so:
+
+```
+exchange.markets['ETH/BTC']['taker'] // taker fee rate for ETH/BTC
+exchange.markets['BTC/USD']['maker'] // maker fee rate for BTC/USD
+```
+
+Maker fees are paid when you provide liquidity to the exchange i.e. you *market-make* an order and someone else fills it. Maker fees are usually lower than taker fees. Similarly, taker fees are paid when you *take* liquidity from the exchange and fill someone else's order.
+
+### Funding Fees
+
+Funding fees are properties of currencies (account balance).
+
+Accessing funding fee rates should be done via the `.currencies` property. This aspect is not unified yet and is subject to change.
+
+```
+exchange.currencies['ETH']['fee'] // tx/withdrawal fee rate for ETH
+exchange.currencies['BTC']['fee'] // tx/withdrawal fee rate for BTC
+```
 
 ### Ledger
 

@@ -14,8 +14,8 @@ except NameError:
 import math
 import json
 from ccxt.base.errors import ExchangeError
-from ccxt.base.errors import NotSupported
 from ccxt.base.errors import AuthenticationError
+from ccxt.base.errors import NotSupported
 
 
 class bitstamp (Exchange):
@@ -419,6 +419,8 @@ class bitstamp (Exchange):
             market = self.market(symbol)
             request['pair'] = market['id']
             method += 'Pair'
+        if limit is not None:
+            request['limit'] = limit
         response = await getattr(self, method)(self.extend(request, params))
         return self.parse_trades(response, market, since, limit)
 
@@ -508,8 +510,8 @@ class bitstamp (Exchange):
 
     async def fetch_open_orders(self, symbol=None, since=None, limit=None, params={}):
         market = None
+        await self.load_markets()
         if symbol is not None:
-            await self.load_markets()
             market = self.market(symbol)
         orders = await self.privatePostOpenOrdersAll()
         return self.parse_orders(orders, market, since, limit)
